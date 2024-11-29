@@ -4,10 +4,13 @@ from flask import Flask, render_template, request
 app = Flask(__name__)
 habits = ["Walk the dog", "Walk with the dog"]
 
+@app.context_processor
+def add_call_date_range():
+    def date_range(start: datetime.date):
+        dates = [start + datetime.timedelta(days=diff) for diff in range(-3, 4)]
+        return dates
 
-def date_range(start: datetime.date):
-    dates = [start + datetime.timedelta(days=diff) for diff in range(-3, 4)]
-    return dates
+    return {"date_range": date_range}
 
 
 @app.route("/")
@@ -21,7 +24,6 @@ def index():
         "index.html",
         habits=habits,
         title="Habit Traker - Home",
-        date_range=date_range,
         selected_date=selected_date,
     )
 
@@ -30,7 +32,11 @@ def index():
 def add_habit():
     if request.method == "POST":
         habits.append(request.form.get("habit"))
-    return render_template("add_habit.html", title="Habit Traker - Add Habit")
+    return render_template(
+        "add_habit.html",
+        title="Habit Traker - Add Habit",
+        selected_date=datetime.date.today()
+    )
 
 
 if __name__ == '__main__':
